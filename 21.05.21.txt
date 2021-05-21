@@ -1,0 +1,229 @@
+Person.h
+#pragma once
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Person
+{
+	//ФИО
+	char* name;
+	int age;
+	int socialId;
+public:
+	//конструктор по умольчанию
+	Person(): name{nullptr}, age{0}, socialId{0} 
+	{
+		cout << "1# Person constructed\n";
+	}
+
+	Person(const char* nameP)
+		: name{new char[strlen(nameP + 1)]},
+		age{0}, socialId{0} 
+	{
+		strcpy_s(name, strlen(nameP) + 1, nameP);
+		cout << "2# Person constructed\n";
+	}
+
+	Person(const char* nameP, int ageP)
+		: name{ new char[strlen(nameP + 1)] },
+		age{ ageP }, socialId{ 0 } 
+	{
+		strcpy_s(name, strlen(nameP) + 1, nameP);
+		cout << "3# Person constructed\n";
+	}
+
+	Person(const char* nameP, int ageP, int Id)
+		: name{ new char[strlen(nameP + 1)] },
+		age{ ageP }, socialId{ Id } 
+	{
+		strcpy_s(name, strlen(nameP) + 1, nameP);
+		cout << "4# Person constructed\n";
+	}
+	//деструктор
+	~Person()
+	{
+		delete[] name;
+		cout << "Person destructed";
+	}
+	
+};
+
+Person.cpp
+#include <iostream>
+#include "Person.h"
+using namespace std;
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+	Person person1;
+	Person person2("Иванов А.И"); 
+	Person person3("MR X", 25);
+	Person person4("MR X_Y", 30, 1);
+	return 0;
+}
+
+
+=============================================
+Person.h
+#pragma once
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Person
+{
+	//ФИО
+	char* name;
+	int age;
+	int socialId;
+public:
+	Person(const char* nameP, int ageP, int Id)
+		: name{ nameP ? new char[strlen(nameP) + 1] : nullptr },
+		age{ ageP }, socialId{ Id }
+	{
+		/*if (nameP)
+			name = new char[strlen(nameP) + 1];
+		else
+			name = nullptr;*/
+		if (name)
+			strcpy_s(name, strlen(nameP) + 1, nameP);
+		cout << "#1 Person constructed\n";
+	}
+	/*Конструктор по умольчанию делегирует (перенаправляет)
+	свою работу конструктору с параметрами, указывая
+	желаемые параметры.*/
+	Person():Person{nullptr, 0, 0} {}
+	Person(const char* nameP):Person(nameP, 0, 0){}
+	Person(const char* nameP, int ageP) :Person(nameP, ageP, 0) {}
+	
+	~Person()
+	{
+		delete[] name;
+	}
+};
+
+Person.cpp
+#include <iostream>
+#include "Person.h"
+using namespace std;
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+
+
+	Person person1;
+	Person person2("Иванов А.И"); 
+	Person person3("MR X", 25);
+	Person person4("MR X_Y", 30, 1);
+	
+	return 0;
+}
+
+Student.h
+#pragma once
+#include <iostream>
+using namespace std;
+
+class Student
+{
+	//ФИО
+	char* name;
+	//число оценок
+	int markCount;
+	//оценки
+	int* marks;
+	
+public:
+	//конструктор
+	Student(const char* nameP, int studentMarkCount,
+		int* studentMarks)
+		:name{nameP ? new char[strlen(nameP) + 1] : nullptr},
+		markCount{ studentMarkCount },
+		marks{ studentMarks ? new int[markCount] : nullptr}
+	{
+		if (name)
+			strcpy_s(name, strlen(nameP) + 1, nameP);
+		if (marks)
+		{
+			for(int i = 0; i < markCount; i++)
+				marks[i] = studentMarks[i];
+		}
+	}
+
+	Student():Student{nullptr, 0, nullptr}{}
+	Student(const char* nameP) :Student{ nameP, 0, nullptr } {}
+	Student(const char* nameP, int studentMarkCount)
+		:Student{nameP, studentMarkCount, nullptr}{}
+
+	//чтение закрытых членам класса
+	const char* getName()
+	{
+		return name;
+	}
+	const int getMark(int index)
+	{
+		return marks[index-1];
+	}
+
+	const int getMarkCount()
+	{
+		return markCount;
+	}
+	
+	//вычисление средного балла
+	double getAver();
+
+	~Student()
+	{
+		delete[] name;
+		delete[] marks;
+	}
+};
+
+Student.cpp
+#include <iostream>
+#include "Student.h"
+using namespace std;
+
+double Student::getAver()
+{
+	double sum = 0;
+	for (int i = 0; i < markCount; i++)
+	{
+		sum = sum + marks[i];
+	}
+	return sum / markCount;
+}
+
+StudentGrades.cpp
+#include <iostream>
+#include <string>
+#include "Student.h"
+using namespace std;
+
+int main()
+{
+	int array[3]{ 5,5,4 };
+	setlocale(LC_ALL, "Russian");
+	
+	Student student1;
+	Student student2("Иванов А.И");
+	Student student3("Иванов А.И", 3);
+	Student student4("Иванов А.И", 3, array);
+
+	cout << student1.getMarkCount() << endl;
+	
+	cout << student2.getName() << " : " 
+		<< student2.getMarkCount() << endl;
+	
+	cout << student3.getName() << " : "
+		<< student3.getMarkCount() << endl;
+	
+	cout << student4.getName() << " : "
+		<< student4.getMarkCount()<<" "
+		<<student4.getMark(1)<< endl;
+
+
+	return 0;
+}
